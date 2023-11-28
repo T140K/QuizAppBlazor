@@ -1,0 +1,29 @@
+﻿@page "/myquiz"
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>My Quizes</PageTitle>
+
+@if (quizammount == null || quizammount == "")
+{
+    quizammount = "no quizes yet, go to create quiz tab to make one!";
+}
+
+<h3>You have @quizammount</h3>
+
+
+
+@code {
+    private string quizammount = null;
+
+    private string userName = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        userName = user.Identity?.Name;
+
+        await base.OnInitializedAsync();
+    }
+}

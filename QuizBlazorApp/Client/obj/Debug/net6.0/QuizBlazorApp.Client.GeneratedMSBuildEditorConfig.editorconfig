@@ -24,16 +24,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXV0aGVudGljYXRpb24ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/VS-Projects/QuizBlazorApp/QuizBlazorApp/Client/Pages/Counter.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
-[E:/VS-Projects/QuizBlazorApp/QuizBlazorApp/Client/Pages/FetchData.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRmV0Y2hEYXRhLnJhem9y
+[E:/VS-Projects/QuizBlazorApp/QuizBlazorApp/Client/Pages/CreateQuiz.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ3JlYXRlUXVpei5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [E:/VS-Projects/QuizBlazorApp/QuizBlazorApp/Client/Pages/Index.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/VS-Projects/QuizBlazorApp/QuizBlazorApp/Client/Pages/MyQuiz.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTXlRdWl6LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [E:/VS-Projects/QuizBlazorApp/QuizBlazorApp/Client/Shared/LoginDisplay.razor]
@@ -42,10 +42,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [E:/VS-Projects/QuizBlazorApp/QuizBlazorApp/Client/Shared/RedirectToLogin.razor]
 build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFJlZGlyZWN0VG9Mb2dpbi5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
-[E:/VS-Projects/QuizBlazorApp/QuizBlazorApp/Client/Shared/SurveyPrompt.razor]
-build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFN1cnZleVByb21wdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [E:/VS-Projects/QuizBlazorApp/QuizBlazorApp/Client/_Imports.razor]

@@ -1,9 +1,32 @@
 ﻿@page "/"
+@using System.Security.Claims;
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Welcome to the Quiz site @userName</h1>
 
-Welcome to your new app.
+<AuthorizeView>
+    <NotAuthorized>
+        <p>To create and answer quizes you first need to <a href="authentication/login" style="text-decoration:underline">log in!</a></p>
+    </NotAuthorized>
+    <Authorized>
+        <p>To create a quiz or answer one you can use the buttons in the sidebar, or get a link for a quiz from a friend!</p>
+    </Authorized>
+</AuthorizeView>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+    private string userName = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        userName = user.Identity?.Name;
+
+        await base.OnInitializedAsync();
+    }
+}
