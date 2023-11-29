@@ -1,4 +1,4 @@
-﻿namespace QuizBlazorProject.Server.Models
+﻿/*namespace QuizBlazorProject.Server.Models
 {
     public class QuizQuestionTime
     {
@@ -8,3 +8,4 @@
         public QuizQuestion QuizQuestion { get; set; }
     }
 }
+*/

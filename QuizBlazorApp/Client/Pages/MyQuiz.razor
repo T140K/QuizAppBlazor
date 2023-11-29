@@ -1,21 +1,31 @@
 ﻿@page "/myquiz"
+@using QuizBlazorApp.Shared.ViewModels
+@using System.Text.Json;
+@using Microsoft.AspNetCore.Components.Authorization;
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject HttpClient _httpClient
 
-<PageTitle>My Quizes</PageTitle>
+<PageTitle>My Quizzes</PageTitle>
 
-@if (quizammount == null || quizammount == "")
+<h3>Welcome, @userName!</h3>
+
+@if (userQuizzes != null)
 {
-    quizammount = "no quizes yet, go to create quiz tab to make one!";
+    <ul>
+        @foreach (var quiz in userQuizzes)
+        {
+            <li>@quiz.QuizName</li>
+        }
+    </ul>
+}
+else
+{
+    <p>No quizzes found for this user.</p>
 }
 
-<h3>You have @quizammount</h3>
-
-
-
 @code {
-    private string quizammount = null;
-
-    private string userName = null;
+    private string userName;
+    private List<QuizViewModel> userQuizzes;
 
     protected override async Task OnInitializedAsync()
     {
@@ -24,6 +34,35 @@
 
         userName = user.Identity?.Name;
 
-        await base.OnInitializedAsync();
+        await LoadUserQuizData();
+    }
+
+    private async Task LoadUserQuizData()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync("/api/quiz/userquiz");
+            if (response.IsSuccessStatusCode)
+            {
+
+                var jsonString = await response.Content.ReadAsStringAsync();
+                if (jsonString == null || jsonString == "" )
+                {
+                    Console.WriteLine("jsonString is null");
+                }
+                userQuizzes = JsonSerializer.Deserialize<List<QuizViewModel>>(jsonString, new JsonSerializerOptions //doesnt wrok
+                {
+                    PropertyNameCaseInsensitive = true 
+                });
+            }
+            else
+            {
+                Console.WriteLine("API request failed");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Getting quiz data failed {ex.Message}");
+        }
     }
 }
