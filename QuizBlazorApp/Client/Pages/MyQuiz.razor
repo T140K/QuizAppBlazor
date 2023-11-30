@@ -1,7 +1,7 @@
 ﻿@page "/myquiz"
 @using QuizBlazorApp.Shared.ViewModels
-@using System.Text.Json;
-@using Microsoft.AspNetCore.Components.Authorization;
+@using System.Text.Json
+@using Microsoft.AspNetCore.Components.Authorization
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject HttpClient _httpClient
 
@@ -9,24 +9,26 @@
 
 <h3>Welcome, @userName!</h3>
 
-@if (userQuizzes != null)
+@if (quizViewModel == null)
 {
-    <ul>
-        @foreach (var quiz in userQuizzes)
-        {
-            <li>@quiz.QuizName</li>
-        }
-    </ul>
+    <p>No quizzes found for this user.</p>
 }
 else
 {
-    <p>No quizzes found for this user.</p>
+    <ul>
+        @foreach (var quiz in quizViewModel)
+        {
+            @foreach (var items in @quiz.QuizItems)
+            {
+                <p>@items.CreatorName</p>
+            }
+        }
+    </ul>
 }
 
 @code {
     private string userName;
-    private List<QuizViewModel> userQuizzes;
-
+    private List<QuizViewModelViewModel> quizViewModel;
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -44,16 +46,21 @@ else
             var response = await _httpClient.GetAsync("/api/quiz/userquiz");
             if (response.IsSuccessStatusCode)
             {
-
                 var jsonString = await response.Content.ReadAsStringAsync();
-                if (jsonString == null || jsonString == "" )
+                if (string.IsNullOrEmpty(jsonString))
                 {
-                    Console.WriteLine("jsonString is null");
+                    Console.WriteLine("jsonString is null or empty");
                 }
-                userQuizzes = JsonSerializer.Deserialize<List<QuizViewModel>>(jsonString, new JsonSerializerOptions //doesnt wrok
-                {
-                    PropertyNameCaseInsensitive = true 
-                });
+
+                var quiz = JsonSerializer.Deserialize<QuizViewModelViewModel>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                //quiz = quizViewModel; doesnt work
+
+                /*var userQuizzesz = JsonSerializer.Deserialize<List<QuizViewModel>>(jsonString, new JsonSerializerOptions //doesnt wrok
+                    {
+                    PropertyNameCaseInsensitive = true
+                });*/
+                //quizView = quizList;
             }
             else
             {

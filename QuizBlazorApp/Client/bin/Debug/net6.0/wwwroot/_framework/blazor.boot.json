@@ -199,15 +199,15 @@
       "mscorlib.dll": "sha256-C3gpWQMELcHYfrHU\/1agQUvWTtSNs9Ul2suMxcKFnIc=",
       "netstandard.dll": "sha256-CgGkoZQx73t3qchcsu85kgBcgrjNEOiudArOwKNb18k=",
       "System.Private.CoreLib.dll": "sha256-6nUSjiT7okMlkN897OnDypwppYuK7JxTahOClXkAuwE=",
-      "QuizBlazorApp.Shared.dll": "sha256-3uneH2xGEFh1uJ3GD254ZpfwV+k2nmzZegJC3quDLk8=",
-      "QuizBlazorApp.Client.dll": "sha256-EgE977AhNcp1jOrCMcea7za\/CMLHhFstnPfvrBB9VNs="
+      "QuizBlazorApp.Shared.dll": "sha256-j3OttXtmAojoaiOqfZwF\/7gTl\/eXuE0N\/Is7MW\/VDtE=",
+      "QuizBlazorApp.Client.dll": "sha256-DKg0BUDW1s2vB3z\/gjnuLuEYSywAxXW2NxXf6HzKS3w="
     },
     "extensions": null,
     "lazyAssembly": null,
     "libraryInitializers": null,
     "pdb": {
-      "QuizBlazorApp.Shared.pdb": "sha256-dB6op0nyaJIQsr3eafe4TvHpancan1Kf0KO+mCd46C0=",
-      "QuizBlazorApp.Client.pdb": "sha256-a1fAtslELKJgPqJlH\/Q2voJG0Zql0VIS6U+xPe8CdpA="
+      "QuizBlazorApp.Shared.pdb": "sha256-Ndkw3toIkWeuNYFCxdN\/Zy519foATFlEdhvgQF7nw\/M=",
+      "QuizBlazorApp.Client.pdb": "sha256-4jGTVjsszR70tyDp03GBCi4XJ1o6Xhww\/qDLjvuHylQ="
     },
     "runtime": {
       "dotnet.6.0.16.7s44cf9ua9.js": "sha256-GT2gK+GjOisRXJY+9yh6H8s6K\/KDIsaFMFIgWvAnttY=",

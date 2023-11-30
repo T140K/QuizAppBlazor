@@ -44,14 +44,41 @@ namespace QuizBlazorApp.Server.Controllers
                 .Include(q => q.QuizQuestions)
                     .ThenInclude(qq => qq.Answers)
                 .Where(q => q.CreatorName == userId.Email)
-                .FirstOrDefaultAsync();
+                .ToListAsync();
 
             if (quiz == null)
             {
                 return NotFound();
             }
 
-            var quizViewModel = new QuizViewModel
+
+            var quizViewModels = new QuizViewModelViewModel()
+            {
+                QuizItems = quiz.Select(quiz => new QuizViewModel
+                {
+                    QuizId = quiz.Id,
+                    QuizName = quiz.QuizName,
+                    CreatorName = quiz.CreatorName,
+                    Questions = quiz.QuizQuestions.Select(q => new QuestionViewModel
+                    {
+                        QuestionId = q.Id,
+                        FKQuizGameId = q.FKQuizGameId,
+                        QuestionName = q.QuestionName,
+                        IsTimed = q.IsTimed,
+                        TimeLimit = q.TimeLimit,
+                        Answers = q.Answers.Select(a => new AnswerViewModel
+                        {
+                            AnswerId = a.Id,
+                            FKQuestionId = a.FKQuestionId,
+                            AnswerTitle = a.AnswerTitle,
+                            CorrectAnswer = a.CorrectAnswer
+                        }).ToList()
+                    }).ToList()
+                }).ToList()
+            };
+            
+
+            /*var quizViewModels = new QuizViewModel
             {
                 QuizId = quiz.Id,
                 QuizName = quiz.QuizName,
@@ -73,9 +100,9 @@ namespace QuizBlazorApp.Server.Controllers
                                 CorrectAnswer = a.CorrectAnswer
                             }).ToList()
                     }).ToList()
-            };
+            };*/
 
-            return Ok(quizViewModel);
+            return Ok(quizViewModels);
         }
     }
 }
