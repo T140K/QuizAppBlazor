@@ -90,7 +90,6 @@ E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\QuizBlazorApp
 E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\QuizBlazorApp.Server.AssemblyInfoInputs.cache
 E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\QuizBlazorApp.Server.AssemblyInfo.cs
 E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\QuizBlazorApp.Server.csproj.CoreCompileInputs.cache
-E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\QuizBlazorApp.Server.MvcApplicationPartsAssemblyInfo.cs
 E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\QuizBlazorApp.Server.MvcApplicationPartsAssemblyInfo.cache
 E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\QuizBlazorApp.Server.RazorAssemblyInfo.cache
 E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\QuizBlazorApp.Server.RazorAssemblyInfo.cs

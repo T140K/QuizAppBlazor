@@ -7,28 +7,47 @@
 
 <PageTitle>My Quizzes</PageTitle>
 
-<h3>Welcome, @userName!</h3>
+<h2>Welcome, @userName!</h2>
 
 @if (quizViewModel == null)
 {
-    <p>No quizzes found for this user.</p>
+    <p>You dont have any quizzes, you should make some!</p>
 }
 else
 {
-    <ul>
-        @foreach (var quiz in quizViewModel)
-        {
-            @foreach (var items in @quiz.QuizItems)
-            {
-                <p>@items.CreatorName</p>
-            }
-        }
-    </ul>
+    <h4>Here are your quizes</h4>
+    @foreach (var quiz in quizViewModel)
+    {
+        <div style="border: 1px solid black; padding: 2px; padding-left: 5px; width:auto; padding-bottom: 10px;">
+            <h5>@quiz.QuizName</h5>
+            <ul>
+                @foreach (var question in quiz.Questions)
+                {
+                    <li>
+                        <strong>@question.QuestionName</strong>
+                        <ul>
+                            @foreach (var answer in question.Answers)
+                            {
+                                @if (@answer.CorrectAnswer == true)
+                                {
+                                    <li><strong>@answer.AnswerTitle</strong></li>
+                                }
+                                else
+                                {
+                                    <li>@answer.AnswerTitle</li>
+                                }
+                            }
+                        </ul>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
 }
 
 @code {
     private string userName;
-    private List<QuizViewModelViewModel> quizViewModel;
+    private QuizViewModel[] quizViewModel;
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -52,7 +71,8 @@ else
                     Console.WriteLine("jsonString is null or empty");
                 }
 
-                var quiz = JsonSerializer.Deserialize<QuizViewModelViewModel>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                quizViewModel = JsonSerializer.Deserialize<QuizViewModel[]>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
 
                 //quiz = quizViewModel; doesnt work
 

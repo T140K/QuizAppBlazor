@@ -34,11 +34,6 @@ namespace QuizBlazorApp.Server.Controllers
             {
                 return BadRequest("Can't find user.");
             }
-            /*var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null)
-            {
-                return BadRequest("cant find user.");
-            }*/
 
             var quiz = await _context.QuizGames
                 .Include(q => q.QuizQuestions)
@@ -52,33 +47,7 @@ namespace QuizBlazorApp.Server.Controllers
             }
 
 
-            var quizViewModels = new QuizViewModelViewModel()
-            {
-                QuizItems = quiz.Select(quiz => new QuizViewModel
-                {
-                    QuizId = quiz.Id,
-                    QuizName = quiz.QuizName,
-                    CreatorName = quiz.CreatorName,
-                    Questions = quiz.QuizQuestions.Select(q => new QuestionViewModel
-                    {
-                        QuestionId = q.Id,
-                        FKQuizGameId = q.FKQuizGameId,
-                        QuestionName = q.QuestionName,
-                        IsTimed = q.IsTimed,
-                        TimeLimit = q.TimeLimit,
-                        Answers = q.Answers.Select(a => new AnswerViewModel
-                        {
-                            AnswerId = a.Id,
-                            FKQuestionId = a.FKQuestionId,
-                            AnswerTitle = a.AnswerTitle,
-                            CorrectAnswer = a.CorrectAnswer
-                        }).ToList()
-                    }).ToList()
-                }).ToList()
-            };
-            
-
-            /*var quizViewModels = new QuizViewModel
+            var quizViewModels = quiz.Select(quiz => new QuizViewModel
             {
                 QuizId = quiz.Id,
                 QuizName = quiz.QuizName,
@@ -92,7 +61,7 @@ namespace QuizBlazorApp.Server.Controllers
                         IsTimed = q.IsTimed,
                         TimeLimit = q.TimeLimit,
                         Answers = q.Answers.Select(a =>
-                            new AnswerViewModel()
+                            new AnswerViewModel
                             {
                                 AnswerId = a.Id,
                                 FKQuestionId = a.FKQuestionId,
@@ -100,7 +69,7 @@ namespace QuizBlazorApp.Server.Controllers
                                 CorrectAnswer = a.CorrectAnswer
                             }).ToList()
                     }).ToList()
-            };*/
+            }).ToList();
 
             return Ok(quizViewModels);
         }

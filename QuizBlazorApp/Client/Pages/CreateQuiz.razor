@@ -1,7 +1,74 @@
 ﻿@page "/createquiz"
+@using QuizBlazorApp.Shared.ViewModels
 
 <h3>Create a quiz here by filling out the quiz form!!</h3>
 
+<EditForm Model="@quiz" OnValidSubmit="HandleSubmit">
+    <InputText @bind-Value="quiz.QuizName" placeholder="Quiz Name" />
+    @foreach (var question in quiz.Questions)
+    {
+        <div style="padding:10px; border: solid black 3px; margin: 5px;">
+            <InputText @bind-Value="question.QuestionName" placeholder="Question" />
+            <span>Timed question?<input type="checkbox" @bind="question.IsTimed" /></span>
+            @if (question.IsTimed){<input @bind-value="question.TimeLimit" placeholder="How many seconds?"/>}
+            <button type="button" @onclick="() => RemoveQuestion(question)">Remove Question</button>
+            @foreach (var answer in question.Answers)
+            {
+                <div style="padding:10px;">
+                    <InputText @bind-Value="answer.AnswerTitle" placeholder="Answer" />
+                    <input type="checkbox" @bind="answer.CorrectAnswer" @onclick="() => SetCorrectAnswer(question, answer)" />
+                    <button type="button" @onclick="() => RemoveAnswer(question, answer)">Remove Answer</button>    
+                </div>
+            }
+
+            <button type="button" @onclick="() => AddAnswer(question)">Add Answer</button>
+        </div>
+    }
+
+    <button type="button" @onclick="AddQuestion">Add Question</button>
+    <br><br>
+    <button type="submit" onsubmit="@HandleSubmit">Create Quiz</button>
+</EditForm>
+
 @code {
-    
+    private async Task HandleSubmit()
+    {
+
+    }
+
+    private QuizViewModel quiz = new QuizViewModel
+        {
+            Questions = new List<QuestionViewModel>()
+        };
+
+    private void AddQuestion()
+    {
+        quiz.Questions.Add(new QuestionViewModel { Answers = new List<AnswerViewModel>() });
+    }
+
+    private void AddAnswer(QuestionViewModel question)
+    {
+        question.Answers.Add(new AnswerViewModel());
+    }
+
+    private void SetCorrectAnswer(QuestionViewModel question, AnswerViewModel selectedAnswer)
+    {
+        foreach (var answer in question.Answers)
+        {
+            if (answer != selectedAnswer)
+            {
+                answer.CorrectAnswer = false;
+            }
+        }
+    }
+
+    private void RemoveQuestion(QuestionViewModel question)
+    {
+        quiz.Questions.Remove(question);
+    }
+
+    private void RemoveAnswer(QuestionViewModel question, AnswerViewModel answer)
+    {
+        question.Answers.Remove(answer);
+    }
 }
