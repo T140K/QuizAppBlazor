@@ -18,7 +18,7 @@ else
     <h4>Here are your quizes</h4>
     @foreach (var quiz in quizViewModel)
     {
-        <div style="border: 1px solid black; padding: 2px; padding-left: 5px; width:auto; padding-bottom: 10px;">
+        <div style="border: 1px solid black; padding: 2px; padding-left: 5px; width:auto; padding-bottom: 10px; margin: 5px;">
             <h5>@quiz.QuizName</h5>
             <ul>
                 @foreach (var question in quiz.Questions)
@@ -71,17 +71,7 @@ else
                     Console.WriteLine("jsonString is null or empty");
                 }
 
-                quizViewModel = JsonSerializer.Deserialize<QuizViewModel[]>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-
-                //quiz = quizViewModel; doesnt work
-
-                /*var userQuizzesz = JsonSerializer.Deserialize<List<QuizViewModel>>(jsonString, new JsonSerializerOptions //doesnt wrok
-                    {
-                    PropertyNameCaseInsensitive = true
-                });*/
-                //quizView = quizList;
-            }
+                quizViewModel = JsonSerializer.Deserialize<QuizViewModel[]>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });            }
             else
             {
                 Console.WriteLine("API request failed");

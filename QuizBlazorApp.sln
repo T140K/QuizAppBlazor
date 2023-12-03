@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33712.159
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuizBlazorApp.Server", "QuizBlazorApp\Server\QuizBlazorApp.Server.csproj", "{A5D37CBD-1062-4E0E-BBF2-9DE1C1330A2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuizBlazorApp.Server", "QuizBlazorApp\Server\QuizBlazorApp.Server.csproj", "{A5D37CBD-1062-4E0E-BBF2-9DE1C1330A2B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuizBlazorApp.Client", "QuizBlazorApp\Client\QuizBlazorApp.Client.csproj", "{AEA6D413-F619-4917-B150-0117BB366D6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuizBlazorApp.Client", "QuizBlazorApp\Client\QuizBlazorApp.Client.csproj", "{AEA6D413-F619-4917-B150-0117BB366D6C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuizBlazorApp.Shared", "QuizBlazorApp\Shared\QuizBlazorApp.Shared.csproj", "{3216F6F0-B002-4B4C-B1BB-7DC6440C64D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuizBlazorApp.Shared", "QuizBlazorApp\Shared\QuizBlazorApp.Shared.csproj", "{3216F6F0-B002-4B4C-B1BB-7DC6440C64D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

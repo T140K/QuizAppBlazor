@@ -1,23 +1,44 @@
 ﻿@page "/createquiz"
 @using QuizBlazorApp.Shared.ViewModels
+@using System.Text.Json
+@using System.Text;
+@inject HttpClient _httpClient
+@inject NavigationManager _navigationManager
 
 <h3>Create a quiz here by filling out the quiz form!!</h3>
 
-<EditForm Model="@quiz" OnValidSubmit="HandleSubmit">
-    <InputText @bind-Value="quiz.QuizName" placeholder="Quiz Name" />
-    @foreach (var question in quiz.Questions)
+<EditForm Model="@createQuizModel" OnValidSubmit="HandleSubmit">
+    <DataAnnotationsValidator />
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorMessage
+        </div>
+    }
+
+    <InputText @bind-Value="createQuizModel.QuizName" placeholder="Quiz Name" />
+    <ValidationMessage For="@(() => createQuizModel.QuizName)" />
+
+    @foreach (var question in createQuizModel.Questions)
     {
         <div style="padding:10px; border: solid black 3px; margin: 5px;">
             <InputText @bind-Value="question.QuestionName" placeholder="Question" />
+            <ValidationMessage For="@(() => question.QuestionName)" />
+
             <span>Timed question?<input type="checkbox" @bind="question.IsTimed" /></span>
-            @if (question.IsTimed){<input @bind-value="question.TimeLimit" placeholder="How many seconds?"/>}
+            @if (question.IsTimed)
+            {
+                <input @bind-value="question.TimeLimit" placeholder="How many seconds?" />
+            }
             <button type="button" @onclick="() => RemoveQuestion(question)">Remove Question</button>
+
             @foreach (var answer in question.Answers)
             {
                 <div style="padding:10px;">
                     <InputText @bind-Value="answer.AnswerTitle" placeholder="Answer" />
                     <input type="checkbox" @bind="answer.CorrectAnswer" @onclick="() => SetCorrectAnswer(question, answer)" />
-                    <button type="button" @onclick="() => RemoveAnswer(question, answer)">Remove Answer</button>    
+                    <button type="button" @onclick="() => RemoveAnswer(question, answer)">Remove Answer</button>
                 </div>
             }
 
@@ -27,31 +48,26 @@
 
     <button type="button" @onclick="AddQuestion">Add Question</button>
     <br><br>
-    <button type="submit" onsubmit="@HandleSubmit">Create Quiz</button>
+    <button type="submit">Create Quiz</button>
 </EditForm>
 
 @code {
-    private async Task HandleSubmit()
-    {
-
-    }
-
-    private QuizViewModel quiz = new QuizViewModel
+    private CreateQuizViewModel createQuizModel = new CreateQuizViewModel
         {
-            Questions = new List<QuestionViewModel>()
+            Questions = new List<CreateQuizQuestions>()
         };
 
     private void AddQuestion()
     {
-        quiz.Questions.Add(new QuestionViewModel { Answers = new List<AnswerViewModel>() });
+        createQuizModel.Questions.Add(new CreateQuizQuestions { Answers = new List<CreateQuestionAnswer>() });
     }
 
-    private void AddAnswer(QuestionViewModel question)
+    private void AddAnswer(CreateQuizQuestions question)
     {
-        question.Answers.Add(new AnswerViewModel());
+        question.Answers.Add(new CreateQuestionAnswer());
     }
 
-    private void SetCorrectAnswer(QuestionViewModel question, AnswerViewModel selectedAnswer)
+    private void SetCorrectAnswer(CreateQuizQuestions question, CreateQuestionAnswer selectedAnswer)
     {
         foreach (var answer in question.Answers)
         {
@@ -62,13 +78,66 @@
         }
     }
 
-    private void RemoveQuestion(QuestionViewModel question)
+    private void RemoveQuestion(CreateQuizQuestions question)
     {
-        quiz.Questions.Remove(question);
+        createQuizModel.Questions.Remove(question);
     }
 
-    private void RemoveAnswer(QuestionViewModel question, AnswerViewModel answer)
+    private void RemoveAnswer(CreateQuizQuestions question, CreateQuestionAnswer answer)
     {
         question.Answers.Remove(answer);
+    }
+
+    private string errorMessage = "";
+
+    private async Task HandleSubmit()
+    {
+        if (!ValidateQuiz())
+        {
+            errorMessage = "You need at least 1 question and 2 answers per question and 1 correct answer!";
+            return; 
+        }
+
+        var jsonContent = JsonSerializer.Serialize(createQuizModel);
+        var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync("api/quiz/createquiz", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            _navigationManager.NavigateTo("/myquiz");
+        }
+        else
+        {
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+            }
+        }
+    }
+
+    private bool ValidateQuiz()
+    {
+        if (!createQuizModel.Questions.Any())
+        {
+            errorMessage = "Please add at least one question.";
+            return false;
+        }
+
+        foreach (var question in createQuizModel.Questions)
+        {
+            if (question.Answers.Count < 2)
+            {
+                errorMessage = "Each question must have at least two answers.";
+                return false;
+            }
+
+            if (!question.Answers.Any(a => a.CorrectAnswer))
+            {
+                errorMessage = "Each question must have at least one correct answer.";
+                return false;
+            }
+        }
+
+        return true;
     }
 }

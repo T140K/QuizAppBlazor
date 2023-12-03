@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuizBlazorApp.Server.Data;
 using QuizBlazorApp.Shared.ViewModels;
+using QuizBlazorProject.Server.Models;
 
 namespace QuizBlazorApp.Server.Controllers
 {
@@ -39,6 +40,7 @@ namespace QuizBlazorApp.Server.Controllers
                 .Include(q => q.QuizQuestions)
                     .ThenInclude(qq => qq.Answers)
                 .Where(q => q.CreatorName == userId.Email)
+                .OrderByDescending(q => q.Id)
                 .ToListAsync();
 
             if (quiz == null)
@@ -72,6 +74,51 @@ namespace QuizBlazorApp.Server.Controllers
             }).ToList();
 
             return Ok(quizViewModels);
+        }
+
+        [HttpPost("createquiz")]
+        public async Task<IActionResult> CreateQuiz([FromBody] CreateQuizViewModel quizViewModel)
+        {
+            var user = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (user == null)
+            {
+                return BadRequest("Can't find user.");
+            }
+
+            var userId = _context.Users.Where(u => u.Id == user).FirstOrDefault();
+            if (userId == null)
+            {
+                return BadRequest("Can't find user.");
+            }
+
+            var existingQuiz = await _context.QuizGames.FirstOrDefaultAsync(q => q.QuizName.ToLower() == quizViewModel.QuizName.ToLower());
+            if (existingQuiz != null)
+            {
+                return BadRequest("A quiz with this name already exists. Please choose a different name.");
+            }
+
+            var quiz = new QuizGame
+            {
+                QuizName = quizViewModel.QuizName,
+                CreatorName = userId.Email, 
+                QuizQuestions = quizViewModel.Questions.Select(q => new QuizQuestion
+                {
+                    QuestionName = q.QuestionName,
+                    IsTimed = q.IsTimed,
+                    TimeLimit = q.TimeLimit,
+                    Answers = q.Answers.Select(a => new QuizQuestionAnswer
+                    {
+                        AnswerTitle = a.AnswerTitle,
+                        CorrectAnswer = a.CorrectAnswer
+                    }).ToList()
+                }).ToList()
+            };
+
+
+            _context.QuizGames.Add(quiz);
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
     }
 }
