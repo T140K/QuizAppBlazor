@@ -2,6 +2,7 @@
 @using QuizBlazorApp.Shared.ViewModels
 @using System.Text.Json
 @using System.Text;
+@using System.Web;
 @inject HttpClient _httpClient
 @inject NavigationManager _navigationManager
 
@@ -25,23 +26,47 @@
         <div style="padding:10px; border: solid black 3px; margin: 5px;">
             <InputText @bind-Value="question.QuestionName" placeholder="Question" />
             <ValidationMessage For="@(() => question.QuestionName)" />
-
+            <button type="button" @onclick="() => RemoveQuestion(question)">Remove Question</button>
+            <br>
             <span>Timed question?<input type="checkbox" @bind="question.IsTimed" /></span>
             @if (question.IsTimed)
             {
                 <input @bind-value="question.TimeLimit" placeholder="How many seconds?" />
             }
-            <button type="button" @onclick="() => RemoveQuestion(question)">Remove Question</button>
+            <br>
+            <span>Use picture/video?<input type="checkbox" @bind="question.UseMediaUrl" /></span>
+            @if (question.UseMediaUrl)
+            {
+                <input @bind-value="@question.MediaUrl" placeholder="Media link" @oninput="() => UpdateMediaPreview(question)" />
+
+                @if (IsImage(question.MediaUrl))
+                {
+                    <img src="@question.MediaUrl" alt="Image preview" style="max-width: 100%; max-height: 200px;" />
+                }
+                else if (IsVideo(question.MediaUrl))
+                {
+                    <video controls style="max-width: 100%; max-height: 200px;">
+                        <source src="@question.MediaUrl" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                }
+                else if (IsYouTubeVideo(question.MediaUrl))
+                {
+                    var embedUrl = GetYouTubeEmbedUrl(question.MediaUrl);
+                    <iframe width="560" height="315" src="@embedUrl" frameborder="0" allowfullscreen></iframe>
+                }
+            }
 
             @foreach (var answer in question.Answers)
             {
                 <div style="padding:10px;">
                     <InputText @bind-Value="answer.AnswerTitle" placeholder="Answer" />
+                    <ValidationMessage For="@(() => answer.AnswerTitle)" />
                     <input type="checkbox" @bind="answer.CorrectAnswer" @onclick="() => SetCorrectAnswer(question, answer)" />
                     <button type="button" @onclick="() => RemoveAnswer(question, answer)">Remove Answer</button>
                 </div>
             }
-
+            <br>
             <button type="button" @onclick="() => AddAnswer(question)">Add Answer</button>
         </div>
     }
@@ -50,6 +75,21 @@
     <br><br>
     <button type="submit">Create Quiz</button>
 </EditForm>
+<br />
+<div>
+    
+    <ul>
+        <li>
+            <h4>Think about:</h4>
+            <ul>
+                <li> Quiz questions that have freetext answers ignore capitalization!</li>
+                <li>The timed question is allways timed in how many seconds the player has to answer!</li>
+                <li>If you copy images you need to right click the image and select copy image address/link and paste that</li>
+                <li>if the image or video doesnt work try something else, the link might be broken!</li>
+            </ul>
+        </li>
+    </ul>
+</div>
 
 @code {
     private CreateQuizViewModel createQuizModel = new CreateQuizViewModel
@@ -88,13 +128,54 @@
         question.Answers.Remove(answer);
     }
 
+    private void UpdateMediaPreview(CreateQuizQuestions question)
+    {
+        
+    }
+
+    private bool IsImage(string url)
+    {
+        return url?.EndsWith(".jpg") == true || url?.EndsWith(".jpeg") == true || url?.EndsWith(".png") == true || url?.EndsWith(".gif") == true;
+    }
+
+    private bool IsVideo(string url)
+    {
+        return url?.EndsWith(".mp4") == true || url?.EndsWith(".webm") == true;
+    }
+
+    private string GetYouTubeEmbedUrl(string url)
+    {
+        if (string.IsNullOrEmpty(url))
+        {
+            return string.Empty;
+        }
+
+        var youtubeVideoId = string.Empty;
+        if (url.Contains("youtube.com"))
+        {
+            var uri = new Uri(url);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+            youtubeVideoId = query["v"];
+        }
+        else if (url.Contains("youtu.be"))
+        {
+            youtubeVideoId = url.Split('/').Last();
+        }
+
+        return !string.IsNullOrEmpty(youtubeVideoId) ? $"https://www.youtube.com/embed/{youtubeVideoId}" : string.Empty;
+    }
+
+    private bool IsYouTubeVideo(string url)
+    {
+        return url.Contains("youtube.com") || url.Contains("youtu.be");
+    }
+
     private string errorMessage = "";
 
     private async Task HandleSubmit()
     {
         if (!ValidateQuiz())
         {
-            errorMessage = "You need at least 1 question and 2 answers per question and 1 correct answer!";
             return; 
         }
 
@@ -125,17 +206,48 @@
 
         foreach (var question in createQuizModel.Questions)
         {
-            if (question.Answers.Count < 2)
+            if (string.IsNullOrEmpty(question.QuestionName))
             {
-                errorMessage = "Each question must have at least two answers.";
+                errorMessage = "question needs a title";
                 return false;
+            }
+            foreach (var answer in question.Answers)
+            {
+                if (string.IsNullOrEmpty(answer.AnswerTitle))
+                {
+                    errorMessage = "answer needs a name";
+                    return false;
+                }
+            }
+            if (!question.IsFreeTextAnswer)
+            {
+                if (question.Answers.Count < 2)
+                {
+                    errorMessage = "Each question must have at least two answers.";
+                    return false;
+                }
+
+                if (!question.Answers.Any(a => a.CorrectAnswer))
+                {
+                    errorMessage = "Each question must have at least one correct answer.";
+                    return false;
+                }
+            }
+            if (question.IsFreeTextAnswer)
+            {
+                if (question.Answers.Count != 1)
+                {
+                    errorMessage = "freetext questions should only have 1 true answer";
+                    return false;
+                }
+
+                if (!question.Answers.Any(a => a.CorrectAnswer))
+                {
+                    errorMessage = "Each question must have at least one correct answer.";
+                    return false;
+                }
             }
 
-            if (!question.Answers.Any(a => a.CorrectAnswer))
-            {
-                errorMessage = "Each question must have at least one correct answer.";
-                return false;
-            }
         }
 
         return true;

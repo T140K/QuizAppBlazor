@@ -106,6 +106,8 @@ namespace QuizBlazorApp.Server.Controllers
                     QuestionName = q.QuestionName,
                     IsTimed = q.IsTimed,
                     TimeLimit = q.TimeLimit,
+                    IsFreeTextAnswer = q.IsFreeTextAnswer,
+                    MediaUrl = q.MediaUrl,
                     Answers = q.Answers.Select(a => new QuizQuestionAnswer
                     {
                         AnswerTitle = a.AnswerTitle,

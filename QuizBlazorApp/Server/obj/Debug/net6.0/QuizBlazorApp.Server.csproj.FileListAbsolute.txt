@@ -107,3 +107,4 @@ E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\refint\QuizBl
 E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\QuizBlazorApp.Server.pdb
 E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\QuizBlazorApp.Server.genruntimeconfig.cache
 E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\ref\QuizBlazorApp.Server.dll
+E:\VS-Projects\QuizBlazorApp\QuizBlazorApp\Server\obj\Debug\net6.0\QuizBlazorApp.Server.MvcApplicationPartsAssemblyInfo.cs

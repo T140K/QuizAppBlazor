@@ -9,7 +9,7 @@
 
 <h2>Welcome, @userName!</h2>
 
-@if (quizViewModel == null)
+@if (quizViewModel.Length < 1)
 {
     <p>You dont have any quizzes, you should make some!</p>
 }
@@ -24,7 +24,7 @@ else
                 @foreach (var question in quiz.Questions)
                 {
                     <li>
-                        <strong>@question.QuestionName</strong>
+                        @question.QuestionName
                         <ul>
                             @foreach (var answer in question.Answers)
                             {

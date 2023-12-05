@@ -10,7 +10,6 @@ namespace QuizBlazorApp.Shared.ViewModels
     public class CreateQuizViewModel
     {
         [Required(ErrorMessage = "The quiz needs a title")]
-
         public string QuizName { get; set; }
         public List<CreateQuizQuestions> Questions { get; set; }
 
@@ -20,8 +19,11 @@ namespace QuizBlazorApp.Shared.ViewModels
     {
         [Required(ErrorMessage = "This question needs a name")]
         public string QuestionName { get; set; }
-        public bool IsTimed { get; set; }
+        public bool IsTimed { get; set; } = false;
         public int TimeLimit { get; set; } = 0;
+        public bool UseMediaUrl { get; set; } = false;
+        public string MediaUrl { get; set; } = string.Empty;
+        public bool IsFreeTextAnswer { get; set; }
         public List<CreateQuestionAnswer> Answers { get; set; }
     }
 
