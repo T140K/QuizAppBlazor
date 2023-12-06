@@ -21,8 +21,9 @@ namespace QuizBlazorApp.Shared.ViewModels
         public string QuestionName { get; set; }
         public bool IsTimed { get; set; } = false;
         public int TimeLimit { get; set; } = 0;
-        public bool UseMediaUrl { get; set; } = false;
+        public bool UseMedia { get; set; } = false;
         public string MediaUrl { get; set; } = string.Empty;
+        public string MediaType { get; set; } = string.Empty;
         public bool IsFreeTextAnswer { get; set; }
         public List<CreateQuestionAnswer> Answers { get; set; }
     }

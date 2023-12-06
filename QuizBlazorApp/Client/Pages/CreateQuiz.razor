@@ -11,11 +11,16 @@
 <EditForm Model="@createQuizModel" OnValidSubmit="HandleSubmit">
     <DataAnnotationsValidator />
 
-    @if (!string.IsNullOrEmpty(errorMessage))
+    @if (errorMessages.Any())
     {
-        <div class="alert alert-danger" role="alert">
-            @errorMessage
-        </div>
+        
+            @foreach (var message in errorMessages)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <p>@message</p>
+                </div>
+            }
+        
     }
 
     <InputText @bind-Value="createQuizModel.QuizName" placeholder="Quiz Name" />
@@ -34,14 +39,14 @@
                 <input @bind-value="question.TimeLimit" placeholder="How many seconds?" />
             }
             <br>
-            <span>Use picture/video?<input type="checkbox" @bind="question.UseMediaUrl" /></span>
-            @if (question.UseMediaUrl)
+            <span>Use picture/video?<input type="checkbox" @bind="question.UseMedia" /></span>
+            @if (question.UseMedia)
             {
                 <input @bind-value="@question.MediaUrl" placeholder="Media link" @oninput="() => UpdateMediaPreview(question)" />
-
                 @if (IsImage(question.MediaUrl))
                 {
                     <img src="@question.MediaUrl" alt="Image preview" style="max-width: 100%; max-height: 200px;" />
+                    question.MediaType = "image";
                 }
                 else if (IsVideo(question.MediaUrl))
                 {
@@ -49,11 +54,13 @@
                         <source src="@question.MediaUrl" type="video/mp4">
                         Your browser does not support the video tag.
                     </video>
+                    question.MediaType = "video";
                 }
                 else if (IsYouTubeVideo(question.MediaUrl))
                 {
                     var embedUrl = GetYouTubeEmbedUrl(question.MediaUrl);
                     <iframe width="560" height="315" src="@embedUrl" frameborder="0" allowfullscreen></iframe>
+                    question.MediaType = "youtube";
                 }
             }
 
@@ -85,7 +92,8 @@
                 <li> Quiz questions that have freetext answers ignore capitalization!</li>
                 <li>The timed question is allways timed in how many seconds the player has to answer!</li>
                 <li>If you copy images you need to right click the image and select copy image address/link and paste that</li>
-                <li>if the image or video doesnt work try something else, the link might be broken!</li>
+                <li>Make sure that if yuo are using a video or image you see what you expect the quiz taker to see!</li>
+                <li>if the image or video doesnt work try something else, the link might be broken or not compatible!</li>
             </ul>
         </li>
     </ul>
@@ -130,7 +138,7 @@
 
     private void UpdateMediaPreview(CreateQuizQuestions question)
     {
-        
+
     }
 
     private bool IsImage(string url)
@@ -196,60 +204,71 @@
         }
     }
 
+    private List<string> errorMessages = new List<string>();
+
     private bool ValidateQuiz()
     {
+        errorMessages.Clear();
+
         if (!createQuizModel.Questions.Any())
         {
-            errorMessage = "Please add at least one question.";
-            return false;
+            errorMessages.Add("Please add at least one question.");
         }
 
         foreach (var question in createQuizModel.Questions)
         {
+            if (question.IsTimed && question.TimeLimit < 5)
+            {
+                errorMessages.Add("Timed questions needs to be at least 5 seconds");
+            }
             if (string.IsNullOrEmpty(question.QuestionName))
             {
-                errorMessage = "question needs a title";
-                return false;
+                errorMessages.Add("Question needs a title");
             }
             foreach (var answer in question.Answers)
             {
                 if (string.IsNullOrEmpty(answer.AnswerTitle))
                 {
-                    errorMessage = "answer needs a name";
-                    return false;
+                    errorMessages.Add("Answer needs a name");
                 }
             }
             if (!question.IsFreeTextAnswer)
             {
                 if (question.Answers.Count < 2)
                 {
-                    errorMessage = "Each question must have at least two answers.";
-                    return false;
+                    errorMessages.Add("Each question must have at least two answers.");
                 }
 
                 if (!question.Answers.Any(a => a.CorrectAnswer))
                 {
-                    errorMessage = "Each question must have at least one correct answer.";
-                    return false;
+                    errorMessages.Add("Each question must have at least one correct answer.");
                 }
             }
             if (question.IsFreeTextAnswer)
             {
                 if (question.Answers.Count != 1)
                 {
-                    errorMessage = "freetext questions should only have 1 true answer";
-                    return false;
+                    errorMessages.Add("freetext questions should only have 1 true answer");
                 }
 
                 if (!question.Answers.Any(a => a.CorrectAnswer))
                 {
-                    errorMessage = "Each question must have at least one correct answer.";
-                    return false;
+                    errorMessages.Add("Each question must have at least one correct answer.");
                 }
             }
-
+            if (question.UseMedia && string.IsNullOrEmpty(question.MediaUrl))
+            {
+                errorMessages.Add("if you are using media you need to have a link to your image/video.");
+            }
         }
 
-        return true;
+        if (!errorMessages.Any())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

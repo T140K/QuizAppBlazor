@@ -62,6 +62,9 @@ namespace QuizBlazorApp.Server.Controllers
                         QuestionName = q.QuestionName,
                         IsTimed = q.IsTimed,
                         TimeLimit = q.TimeLimit,
+                        UseMedia = q.UseMedia,
+                        MediaUrl = q.MediaUrl,
+                        MediaType = q.MediaType,
                         Answers = q.Answers.Select(a =>
                             new AnswerViewModel
                             {
@@ -107,7 +110,9 @@ namespace QuizBlazorApp.Server.Controllers
                     IsTimed = q.IsTimed,
                     TimeLimit = q.TimeLimit,
                     IsFreeTextAnswer = q.IsFreeTextAnswer,
+                    UseMedia = q.UseMedia,
                     MediaUrl = q.MediaUrl,
+                    MediaType = q.MediaType,
                     Answers = q.Answers.Select(a => new QuizQuestionAnswer
                     {
                         AnswerTitle = a.AnswerTitle,

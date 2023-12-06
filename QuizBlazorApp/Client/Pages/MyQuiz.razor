@@ -2,6 +2,7 @@
 @using QuizBlazorApp.Shared.ViewModels
 @using System.Text.Json
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Web;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject HttpClient _httpClient
 
@@ -9,7 +10,7 @@
 
 <h2>Welcome, @userName!</h2>
 
-@if (quizViewModel.Length < 1)
+@if (quizViewModel == null || quizViewModel.Length < 1)
 {
     <p>You dont have any quizzes, you should make some!</p>
 }
@@ -25,6 +26,30 @@ else
                 {
                     <li>
                         @question.QuestionName
+                        @if (question.IsTimed)
+                        {
+                            <p>(The time limit is @question.TimeLimit seconds)</p>
+                        }
+
+                        @if (question.UseMedia)
+                        {
+                            @if (question.MediaType == "image")
+                            {
+                                <img src="@question.MediaUrl" alt="Image preview" style="max-width: 100%; max-height: 200px;" />
+                            }
+                            @if (question.MediaType == "video")
+                            {
+                                <video controls style="max-width: 100%; max-height: 200px;">
+                                    <source src="@question.MediaUrl" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            }
+                            @if (question.MediaType == "youtube")
+                            {
+                                var embedUrl = GetYouTubeEmbedUrl(question.MediaUrl);
+                                <iframe width="560" height="315" src="@embedUrl" frameborder="0" allowfullscreen></iframe>
+                            }
+                        }
                         <ul>
                             @foreach (var answer in question.Answers)
                             {
@@ -81,5 +106,32 @@ else
         {
             Console.WriteLine($"Getting quiz data failed {ex.Message}");
         }
+    }
+
+    private string GetYouTubeEmbedUrl(string url)
+    {
+        if (string.IsNullOrEmpty(url))
+        {
+            return string.Empty;
+        }
+
+        var youtubeVideoId = string.Empty;
+        if (url.Contains("youtube.com"))
+        {
+            var uri = new Uri(url);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+            youtubeVideoId = query["v"];
+        }
+        else if (url.Contains("youtu.be"))
+        {
+            youtubeVideoId = url.Split('/').Last();
+        }
+
+        return !string.IsNullOrEmpty(youtubeVideoId) ? $"https://www.youtube.com/embed/{youtubeVideoId}" : string.Empty;
+    }
+
+    private bool IsYouTubeVideo(string url)
+    {
+        return url.Contains("youtube.com") || url.Contains("youtu.be");
     }
 }
