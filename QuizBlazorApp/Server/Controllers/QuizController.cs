@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuizBlazorApp.Server.Data;
+using QuizBlazorApp.Server.Models;
 using QuizBlazorApp.Shared.ViewModels;
 using QuizBlazorProject.Server.Models;
 
@@ -65,6 +66,7 @@ namespace QuizBlazorApp.Server.Controllers
                         UseMedia = q.UseMedia,
                         MediaUrl = q.MediaUrl,
                         MediaType = q.MediaType,
+                        IsFreeTextAnswer = q.IsFreeTextAnswer,
                         Answers = q.Answers.Select(a =>
                             new AnswerViewModel
                             {
@@ -126,6 +128,117 @@ namespace QuizBlazorApp.Server.Controllers
             await _context.SaveChangesAsync();
 
             return Ok();
+        }
+
+        [HttpGet("getquizbytitle/{quizTitle}")]
+        public async Task<IActionResult> GetQuizByTitle(string quizTitle)
+        {
+            if (string.IsNullOrEmpty(quizTitle))
+            {
+                return BadRequest("No quiz was given");
+            }
+
+            var loadedQuiz = await _context.QuizGames
+                .Include(q => q.QuizQuestions)
+                    .ThenInclude(qq => qq.Answers)
+                .FirstOrDefaultAsync(quiz => quiz.QuizName == quizTitle);
+
+            if (loadedQuiz == null) 
+            {
+                return NotFound($"Didnt find quizz with the title {quizTitle}");
+            }
+
+            var quizViewModel = new QuizViewModel
+            {
+                QuizId = loadedQuiz.Id,
+                QuizName = loadedQuiz.QuizName,
+                CreatorName = loadedQuiz.CreatorName,
+                Questions = loadedQuiz.QuizQuestions.Select(q =>
+                    new QuestionViewModel
+                    {
+                        QuestionId = q.Id,
+                        FKQuizGameId = q.FKQuizGameId,
+                        QuestionName = q.QuestionName,
+                        IsTimed = q.IsTimed,
+                        TimeLimit = q.TimeLimit,
+                        UseMedia = q.UseMedia,
+                        MediaUrl = q.MediaUrl,
+                        MediaType = q.MediaType,
+                        IsFreeTextAnswer = q.IsFreeTextAnswer,
+                        Answers = q.Answers.Select(a =>
+                            new AnswerViewModel
+                            {
+                                AnswerId = a.Id,
+                                FKQuestionId = a.FKQuestionId,
+                                AnswerTitle = a.AnswerTitle,
+                                CorrectAnswer = a.CorrectAnswer
+                            }).ToList()
+                    }).ToList()
+            };
+
+            return Ok(quizViewModel);
+        }
+
+        [HttpPost("submitquiz")]
+        public async Task<IActionResult> SubmitQuiz([FromBody] PlayQuizViewModel quizMatch)
+        {
+            if (quizMatch == null)
+            {
+                return BadRequest("quiz given doesnt exsit");
+            }
+
+            var quizCheatSheet = await _context.QuizGames
+                .Include(q => q.QuizQuestions)
+                    .ThenInclude(qq => qq.Answers)
+                .Where(q => q.Id == quizMatch.FkQuizId)
+                .FirstOrDefaultAsync();
+
+            if (quizCheatSheet == null)
+            {
+                return BadRequest("cant find the corresponding quiz");
+            }
+
+            var quizResult = new QuizResult();
+            quizResult.ResultAnswers = new List<QuizResultAnswers>();
+
+            foreach (var userAnswer in quizMatch.Answers)
+            {
+                var correctAnswers = quizCheatSheet.QuizQuestions
+                    .FirstOrDefault(q => q.Id == userAnswer.FKQuestionId)?
+                    .Answers.Where(a => a.CorrectAnswer).ToList();
+
+                var resultAnswer = new QuizResultAnswers
+                {
+                    FKQuestionId = userAnswer.FKQuestionId,
+                    AnswerdCorrect = false
+                };
+                
+                if (userAnswer.QuestionAnswerdInTime)
+                {
+                    if (userAnswer.IsFreeTextAnswer)
+                    {
+                        var correctAnswer = correctAnswers?.FirstOrDefault();
+                        resultAnswer.AnswerdCorrect = userAnswer.FreeTextAnswer?.Trim().Equals(correctAnswer?.AnswerTitle?.Trim(), StringComparison.OrdinalIgnoreCase) ?? false;
+                    }
+                    else
+                    {
+                        resultAnswer.AnswerdCorrect = correctAnswers?.Any(a => a.Id == userAnswer.SelectedAnswerId) ?? false;
+                    }
+                }
+
+                quizResult.ResultAnswers.Add(resultAnswer);
+                quizResult.TotalAnswers++;
+
+                if (resultAnswer.AnswerdCorrect)
+                {
+                    quizResult.CorrectAnswers++;
+                }
+            }
+
+            _context.QuizResults.Add(quizResult);
+            await _context.SaveChangesAsync();
+
+            return Ok(quizResult);
         }
     }
 }

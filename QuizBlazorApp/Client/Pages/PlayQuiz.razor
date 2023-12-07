@@ -1,0 +1,208 @@
+﻿@page "/playquiz/{QuizTitle}"
+@using QuizBlazorApp.Shared.ViewModels
+@using System.Text.Json;
+@using System.Text;
+@using System.Timers
+@inject HttpClient _httpClient
+
+<PageTitle>Play Quiz</PageTitle>
+
+
+@if (quiz is null)
+{
+    <p>Loading quiz...</p>
+}
+else if (quiz.Questions.Count > currentQuestionIndex)
+{
+
+    var question = quiz.Questions[currentQuestionIndex];
+    var userAnswer = userQuizAnswers.Answers.FirstOrDefault(a => a.FKQuestionId == question.QuestionId)
+        ?? new PlayQuizAnswersViewModel { FKQuestionId = question.QuestionId };
+    userQuizAnswers.FkQuizId = quiz.QuizId;
+    <form>
+        <div>
+            <p>@question.QuestionName</p>
+
+            @if (question.IsTimed)
+            {
+                <p>Time remaining: @timeRemaining seconds</p>
+            }
+
+            @if (question.IsFreeTextAnswer)
+            {
+                <input type="text" @bind="userAnswer.FreeTextAnswer" />
+                userAnswer.IsFreeTextAnswer = true;
+            }
+            else
+            {
+                @foreach (var answer in question.Answers)
+                {
+                    <input type="radio" name="@question.QuestionId" value="@answer.AnswerId"
+                    @onchange="() => userAnswer.SelectedAnswerId = answer.AnswerId" />
+                    <label>@answer.AnswerTitle</label>
+                    <br />
+                }
+            }
+        </div>
+        @if (currentQuestionIndex < quiz.Questions.Count - 1)
+        {
+            <button type="button" @onclick="GoToNextQuestion">Next Question</button>
+        }
+        else
+        {
+            <button type="button" @onclick="SubmitQuiz">Submit Quiz</button>
+        }
+    </form>
+}
+
+@code {
+    [Parameter]
+    public string QuizTitle { get; set; }
+
+    private QuizViewModel quiz;
+    private int currentQuestionIndex = 0;
+    private PlayQuizViewModel userQuizAnswers = new PlayQuizViewModel { Answers = new List<PlayQuizAnswersViewModel>() };
+    private Timer questionTimer;
+    private int timeRemaining;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadQuizAsync();
+        InitializeUserAnswers();
+    }
+
+    private async Task LoadQuizAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"/api/quiz/getquizbytitle/{QuizTitle}");
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonString = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(jsonString))
+                {
+                    Console.WriteLine("jsonString is null or empty");
+                }
+
+                quiz = JsonSerializer.Deserialize<QuizViewModel>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+            else
+            {
+                Console.WriteLine("API request failed");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Getting quiz data failed {ex.Message}");
+        }
+    }
+
+    private void InitializeUserAnswers()
+    {
+        userQuizAnswers = new PlayQuizViewModel();
+        userQuizAnswers.Answers = new List<PlayQuizAnswersViewModel>();
+
+        foreach (var question in quiz.Questions)
+        {
+            userQuizAnswers.Answers.Add(new PlayQuizAnswersViewModel
+                {
+                    FKQuestionId = question.QuestionId,
+                    IsFreeTextAnswer = question.IsFreeTextAnswer,
+                    SelectedAnswerId = 0,
+                    FreeTextAnswer = "",
+                    QuestionAnswerdInTime = true
+                });
+        }
+    }
+
+    private void GoToNextQuestion()
+    {
+        StopTimer();
+
+        var userAnswer = userQuizAnswers.Answers.FirstOrDefault(a => a.FKQuestionId == quiz.Questions[currentQuestionIndex].QuestionId);
+        if (userAnswer != null && timeRemaining <= 0)
+        {
+            userAnswer.QuestionAnswerdInTime = false;
+        }
+
+        currentQuestionIndex++;
+
+        if (currentQuestionIndex < quiz.Questions.Count)
+        {
+            var nextQuestion = quiz.Questions[currentQuestionIndex];
+            if (nextQuestion.IsTimed)
+            {
+                timeRemaining = nextQuestion.TimeLimit;
+                StartTimer();
+            }
+        }
+        StateHasChanged(); 
+    }
+
+    private async Task SubmitQuiz()
+    {
+        StopTimer();
+        var jsonContent = JsonSerializer.Serialize(userQuizAnswers);
+        var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+        try
+        {
+            var response = await _httpClient.PostAsync("/api/quiz/submitquiz", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                
+                //read the result and show the reuslt in a _navigateManager.NavigateTo("/result", resultsviewmodel)
+            }
+            else
+            {
+                Console.WriteLine("Failed to submit quiz");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error submitting quiz: {ex.Message}");
+        }
+    }
+
+    private void StartTimer()
+    {
+        questionTimer = new Timer(1000);
+        questionTimer.Elapsed += OnTimedEvent;
+        questionTimer.AutoReset = true;
+        questionTimer.Enabled = true;
+    }
+
+    private void StopTimer()
+    {
+        questionTimer?.Stop();
+        questionTimer?.Dispose();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (quiz?.Questions.Count > currentQuestionIndex)
+        {
+            var question = quiz.Questions[currentQuestionIndex];
+            if (question.IsTimed)
+            {
+                timeRemaining = question.TimeLimit;
+                StartTimer();
+            }
+        }
+    }
+
+    private void OnTimedEvent(Object source, ElapsedEventArgs e)
+    {
+        if (timeRemaining > 0)
+        {
+            timeRemaining--;
+            InvokeAsync(StateHasChanged);
+        }
+        else
+        {
+            StopTimer();
+            InvokeAsync(() => GoToNextQuestion());
+        }
+    }
+}

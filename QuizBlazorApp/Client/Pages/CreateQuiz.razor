@@ -39,6 +39,8 @@
                 <input @bind-value="question.TimeLimit" placeholder="How many seconds?" />
             }
             <br>
+            <span>Is freetext answer?<input type="checkbox" @bind="question.IsFreeTextAnswer" /></span>
+            <br>
             <span>Use picture/video?<input type="checkbox" @bind="question.UseMedia" /></span>
             @if (question.UseMedia)
             {
@@ -209,6 +211,11 @@
     private bool ValidateQuiz()
     {
         errorMessages.Clear();
+
+        if (createQuizModel.QuizName == "1")
+        {
+            errorMessages.Add("Quiz cannot be named 1");
+        }
 
         if (!createQuizModel.Questions.Any())
         {

@@ -18,7 +18,7 @@ namespace QuizBlazorApp.Server.Data
         public DbSet<QuizGame> QuizGames { get; set; }
         public DbSet<QuizQuestion> QuizQuestions { get; set; }
         public DbSet<QuizQuestionAnswer> QuizQuestionAnswers { get; set; }
-        //public DbSet<QuizQuestionTime> QuizQuestionTimes { get; set;}
+        public DbSet<QuizResult> QuizResults { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,10 +32,10 @@ namespace QuizBlazorApp.Server.Data
                 .WithMany(p => p.Answers)
                 .HasForeignKey(p => p.FKQuestionId);
 
-            /*modelBuilder.Entity<QuizQuestion>()
-                .HasOne(qq => qq.QuizQuestionTime)
-                .WithOne(qqt => qqt.QuizQuestion)
-                .HasForeignKey<QuizQuestionTime>(qqt => qqt.FKQuestionId);*/
+            modelBuilder.Entity<QuizResult>()
+                .HasMany(qr => qr.ResultAnswers)
+                .WithOne(qra => qra.QuizResult)
+                .HasForeignKey(qra => qra.QuizResultId);
 
             base.OnModelCreating(modelBuilder);
         }

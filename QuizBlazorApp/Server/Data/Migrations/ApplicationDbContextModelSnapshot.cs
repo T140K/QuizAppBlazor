@@ -365,6 +365,52 @@ namespace QuizBlazorApp.Server.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("QuizBlazorApp.Server.Models.QuizResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("CorrectAnswers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FKQuizId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalAnswers")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("QuizResults");
+                });
+
+            modelBuilder.Entity("QuizBlazorApp.Server.Models.QuizResultAnswers", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<bool>("AnswerdCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("FKQuestionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuizResultId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizResultId");
+
+                    b.ToTable("QuizResultAnswers");
+                });
+
             modelBuilder.Entity("QuizBlazorProject.Server.Models.QuizGame", b =>
                 {
                     b.Property<int>("Id")
@@ -504,6 +550,17 @@ namespace QuizBlazorApp.Server.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("QuizBlazorApp.Server.Models.QuizResultAnswers", b =>
+                {
+                    b.HasOne("QuizBlazorApp.Server.Models.QuizResult", "QuizResult")
+                        .WithMany("ResultAnswers")
+                        .HasForeignKey("QuizResultId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("QuizResult");
+                });
+
             modelBuilder.Entity("QuizBlazorProject.Server.Models.QuizQuestion", b =>
                 {
                     b.HasOne("QuizBlazorProject.Server.Models.QuizGame", "QuizGame")
@@ -524,6 +581,11 @@ namespace QuizBlazorApp.Server.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("QuizBlazorApp.Server.Models.QuizResult", b =>
+                {
+                    b.Navigation("ResultAnswers");
                 });
 
             modelBuilder.Entity("QuizBlazorProject.Server.Models.QuizGame", b =>
