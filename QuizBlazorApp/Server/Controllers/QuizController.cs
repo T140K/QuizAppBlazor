@@ -238,7 +238,14 @@ namespace QuizBlazorApp.Server.Controllers
             _context.QuizResults.Add(quizResult);
             await _context.SaveChangesAsync();
 
-            return Ok(quizResult);
+            var result = new QuizResultViewModel
+            {
+                QuizCreator = quizCheatSheet.CreatorName,
+                QuizTitle = quizCheatSheet.QuizName,
+                TotalQuestions = quizResult.TotalAnswers,
+                CorrectQuestions = quizResult.CorrectAnswers
+            };
+            return Ok(result);
         }
     }
 }

@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "oFXuC297YNjG2DlXiKb+DV/iaBDApH63UILiyEeMpuk=",
+  "Hash": "/626HIVJu1BklOPRumCLe8l+Uyp/gVYwr7iTYFB4f2I=",
   "Source": "QuizBlazorApp.Client",
   "BasePath": "/",
   "Mode": "Root",
@@ -7274,6 +7274,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\index.html"
+    },
+    {
+      "Identity": "E:\\VS-Projects\\QuizBlazorApp\\QuizBlazorApp\\Client\\wwwroot\\js\\script.js",
+      "SourceId": "QuizBlazorApp.Client",
+      "SourceType": "Discovered",
+      "ContentRoot": "E:\\VS-Projects\\QuizBlazorApp\\QuizBlazorApp\\Client\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "js/script.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\script.js"
     }
   ]
 }

@@ -5,6 +5,7 @@
 @using System.Web;
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject HttpClient _httpClient
+@inject IJSRuntime JSRuntime
 
 <PageTitle>My Quizzes</PageTitle>
 
@@ -20,7 +21,15 @@ else
     @foreach (var quiz in quizViewModel)
     {
         <div style="border: 1px solid black; padding: 2px; padding-left: 5px; width:auto; padding-bottom: 10px; margin: 5px;">
-            <h5>@quiz.QuizName</h5>
+            <div style="justify-content:space-between; display:flex;">
+                <div>
+                    <h5>@quiz.QuizName</h5>
+                </div>
+                <div>
+                    <button @onclick="() => CopyLinkToClipboard(quiz.QuizName)">Copy Link</button>
+                    <a>Show quiz history</a>
+                </div>
+            </div>
             <ul>
                 @foreach (var question in quiz.Questions)
                 {
@@ -73,6 +82,7 @@ else
 @code {
     private string userName;
     private QuizViewModel[] quizViewModel;
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -81,6 +91,12 @@ else
         userName = user.Identity?.Name;
 
         await LoadUserQuizData();
+    }
+
+    private async Task CopyLinkToClipboard(string quiz)
+    {
+        string linkToCopy = $"https://localhost:7179/playquiz/{quiz}";
+        await JSRuntime.InvokeVoidAsync("copyTextToClipboard", linkToCopy);
     }
 
     private async Task LoadUserQuizData()

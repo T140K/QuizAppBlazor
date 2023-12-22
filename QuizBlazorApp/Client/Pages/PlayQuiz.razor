@@ -3,57 +3,92 @@
 @using System.Text.Json;
 @using System.Text;
 @using System.Timers
+@using System.Web
 @inject HttpClient _httpClient
+@inject NavigationManager _navigationManager
 
 <PageTitle>Play Quiz</PageTitle>
 
-
-@if (quiz is null)
+@if (quizResult.IsFinished)
 {
-    <p>Loading quiz...</p>
+    <p>@quizResult.QuizTitle - made by: @quizResult.QuizCreator</p>
+    <p>You got: @quizResult.CorrectQuestions / @quizResult.TotalQuestions</p>
 }
-else if (quiz.Questions.Count > currentQuestionIndex)
+else
 {
+    @if (quiz is null)
+    {
+        <p>Loading quiz...</p>
+    }
+    else if (quiz.Questions.Count > currentQuestionIndex)
+    {
 
-    var question = quiz.Questions[currentQuestionIndex];
-    var userAnswer = userQuizAnswers.Answers.FirstOrDefault(a => a.FKQuestionId == question.QuestionId)
-        ?? new PlayQuizAnswersViewModel { FKQuestionId = question.QuestionId };
-    userQuizAnswers.FkQuizId = quiz.QuizId;
-    <form>
-        <div>
-            <p>@question.QuestionName</p>
+        var question = quiz.Questions[currentQuestionIndex];
+        var userAnswer = userQuizAnswers.Answers.FirstOrDefault(a => a.FKQuestionId == question.QuestionId)
+            ?? new PlayQuizAnswersViewModel { FKQuestionId = question.QuestionId };
+        userQuizAnswers.FkQuizId = quiz.QuizId;
+        <form>
+            <div>
+                <p>@question.QuestionName</p>
 
-            @if (question.IsTimed)
+                @if (question.IsTimed)
+                {
+                    <p>Time remaining: @timeRemaining seconds</p>
+                }
+
+                @if (question.UseMedia)
+                {
+                    <br />
+                    @if (question.MediaType == "image")
+                    {
+                        <br />
+                        <img src="@question.MediaUrl" alt="Image preview" style="max-width: 100%; max-height: 200px;" />
+                    }
+                    @if (question.MediaType == "video")
+                    {
+                        <br />
+                        <video controls style="max-width: 100%; max-height: 200px;">
+                            <source src="@question.MediaUrl" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    }
+                    @if (question.MediaType == "youtube")
+                    {
+                        <br />
+                        var embedUrl = GetYouTubeEmbedUrl(question.MediaUrl);
+                        <iframe width="560" height="315" src="@embedUrl" frameborder="0" allowfullscreen></iframe>
+                    }
+                }
+                <br>
+                @if (question.IsFreeTextAnswer)
+                {
+                    <input type="text" @bind="userAnswer.FreeTextAnswer" />
+                    userAnswer.IsFreeTextAnswer = true;
+                }
+                else
+                {
+                    @foreach (var answer in question.Answers)
+                    {
+                        <input type="radio" name="@question.QuestionId" value="@answer.AnswerId"
+                        @onchange="() => userAnswer.SelectedAnswerId = answer.AnswerId" />
+                        <label>@answer.AnswerTitle</label>
+                        <br />
+                    }
+                }
+            </div>
+            @if (currentQuestionIndex < quiz.Questions.Count - 1)
             {
-                <p>Time remaining: @timeRemaining seconds</p>
-            }
-
-            @if (question.IsFreeTextAnswer)
-            {
-                <input type="text" @bind="userAnswer.FreeTextAnswer" />
-                userAnswer.IsFreeTextAnswer = true;
+                <button type="button" @onclick="GoToNextQuestion">Next Question</button>
             }
             else
             {
-                @foreach (var answer in question.Answers)
-                {
-                    <input type="radio" name="@question.QuestionId" value="@answer.AnswerId"
-                    @onchange="() => userAnswer.SelectedAnswerId = answer.AnswerId" />
-                    <label>@answer.AnswerTitle</label>
-                    <br />
-                }
+                <button type="button" @onclick="SubmitQuiz">Submit Quiz</button>
             }
-        </div>
-        @if (currentQuestionIndex < quiz.Questions.Count - 1)
-        {
-            <button type="button" @onclick="GoToNextQuestion">Next Question</button>
-        }
-        else
-        {
-            <button type="button" @onclick="SubmitQuiz">Submit Quiz</button>
-        }
-    </form>
+        </form>
+    }
 }
+
+
 
 @code {
     [Parameter]
@@ -64,6 +99,8 @@ else if (quiz.Questions.Count > currentQuestionIndex)
     private PlayQuizViewModel userQuizAnswers = new PlayQuizViewModel { Answers = new List<PlayQuizAnswersViewModel>() };
     private Timer questionTimer;
     private int timeRemaining;
+    QuizResultViewModel quizResult = new QuizResultViewModel();
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -151,8 +188,8 @@ else if (quiz.Questions.Count > currentQuestionIndex)
 
             if (response.IsSuccessStatusCode)
             {
-                
-                //read the result and show the reuslt in a _navigateManager.NavigateTo("/result", resultsviewmodel)
+                quizResult = await response.Content.ReadFromJsonAsync<QuizResultViewModel>();
+                quizResult.IsFinished = true;
             }
             else
             {
@@ -204,5 +241,27 @@ else if (quiz.Questions.Count > currentQuestionIndex)
             StopTimer();
             InvokeAsync(() => GoToNextQuestion());
         }
+    }
+
+    private string GetYouTubeEmbedUrl(string url)
+    {
+        if (string.IsNullOrEmpty(url))
+        {
+            return string.Empty;
+        }
+
+        var youtubeVideoId = string.Empty;
+        if (url.Contains("youtube.com"))
+        {
+            var uri = new Uri(url);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+            youtubeVideoId = query["v"];
+        }
+        else if (url.Contains("youtu.be"))
+        {
+            youtubeVideoId = url.Split('/').Last();
+        }
+
+        return !string.IsNullOrEmpty(youtubeVideoId) ? $"https://www.youtube.com/embed/{youtubeVideoId}" : string.Empty;
     }
 }
