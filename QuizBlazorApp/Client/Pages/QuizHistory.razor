@@ -1,8 +1,51 @@
 ﻿@page "/quizhistory/{Quiz}"
+@using QuizBlazorApp.Shared.ViewModels;
+@using System.Text.Json;
+@inject HttpClient _httpClient
 
-<h3>QuizHistory</h3>
+<h3>QuizHistory:</h3>
+
+@foreach (var history in quizHistory)
+{
+    <div>
+        <p>@history.QuizTaker</p>
+        <p>Score: @history.CorrectAnswers / @history.TotalAnswers</p>
+    </div>
+}
 
 @code {
     [Parameter]
     public string Quiz { get; set; }
+    private QuizHistoryViewModel[] quizHistory;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHistoryData();
+    }
+
+    private async Task LoadHistoryData()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"/api/quiz/getquizplayerhistory/{Quiz}");
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonString = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrEmpty(jsonString))
+                {
+                    Console.WriteLine("jsonString is null or empty");
+                }
+
+                quizHistory = JsonSerializer.Deserialize<QuizHistoryViewModel[]>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            }
+            else
+            {
+                Console.WriteLine("API request failed");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Getting quiz data failed {ex.Message}");
+        }
+    }
 }

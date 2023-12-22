@@ -23,6 +23,7 @@ namespace QuizBlazorApp.Server.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
+        [Authorize]
         [HttpGet("userquiz")]
         public async Task<IActionResult> GetQuizzesByUserAsync()
         {
@@ -81,6 +82,7 @@ namespace QuizBlazorApp.Server.Controllers
             return Ok(quizViewModels);
         }
 
+        [Authorize]
         [HttpPost("createquiz")]
         public async Task<IActionResult> CreateQuiz([FromBody] CreateQuizViewModel quizViewModel)
         {
@@ -130,6 +132,7 @@ namespace QuizBlazorApp.Server.Controllers
             return Ok();
         }
 
+        [Authorize]
         [HttpGet("getquizbytitle/{quizTitle}")]
         public async Task<IActionResult> GetQuizByTitle(string quizTitle)
         {
@@ -179,12 +182,25 @@ namespace QuizBlazorApp.Server.Controllers
             return Ok(quizViewModel);
         }
 
+        [Authorize]
         [HttpPost("submitquiz")]
         public async Task<IActionResult> SubmitQuiz([FromBody] PlayQuizViewModel quizMatch)
         {
             if (quizMatch == null)
             {
                 return BadRequest("quiz given doesnt exsit");
+            }
+
+            var user = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (user == null)
+            {
+                return BadRequest("Can't find user.");
+            }
+
+            var userId = _context.Users.Where(u => u.Id == user).FirstOrDefault();
+            if (userId == null)
+            {
+                return BadRequest("Can't find user.");
             }
 
             var quizCheatSheet = await _context.QuizGames
@@ -199,8 +215,11 @@ namespace QuizBlazorApp.Server.Controllers
             }
 
             var quizResult = new QuizResult();
-            quizResult.ResultAnswers = new List<QuizResultAnswers>();
 
+            quizResult.FKQuizId = quizMatch.FkQuizId;
+            quizResult.QuizTaker = userId.Email;
+
+            quizResult.ResultAnswers = new List<QuizResultAnswers>();
             foreach (var userAnswer in quizMatch.Answers)
             {
                 var correctAnswers = quizCheatSheet.QuizQuestions
@@ -246,6 +265,31 @@ namespace QuizBlazorApp.Server.Controllers
                 CorrectQuestions = quizResult.CorrectAnswers
             };
             return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("getquizplayerhistory/{quizId}")]
+        public async Task<IActionResult> GetQuizPlayerHistory(int quizId)
+        {
+            var quizResults = await _context.QuizResults
+                .Include(qr => qr.ResultAnswers)
+                .Where(qr => qr.FKQuizId == quizId)
+                .ToListAsync();
+
+
+            if (!quizResults.Any())
+            {
+                return NotFound($"cant find quiz history");
+            }
+
+            var quizHistoryViewModels = quizResults.Select(qr => new QuizHistoryViewModel
+            {
+                QuizTaker = qr.QuizTaker,
+                TotalAnswers = qr.TotalAnswers,
+                CorrectAnswers = qr.CorrectAnswers
+            }).ToList();
+
+            return Ok(quizHistoryViewModels);
         }
     }
 }

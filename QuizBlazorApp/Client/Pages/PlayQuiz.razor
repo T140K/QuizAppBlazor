@@ -27,7 +27,7 @@ else
         var userAnswer = userQuizAnswers.Answers.FirstOrDefault(a => a.FKQuestionId == question.QuestionId)
             ?? new PlayQuizAnswersViewModel { FKQuestionId = question.QuestionId };
         userQuizAnswers.FkQuizId = quiz.QuizId;
-        <form>
+        <form >
             <div>
                 <p>@question.QuestionName</p>
 
